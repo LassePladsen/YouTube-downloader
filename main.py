@@ -9,11 +9,11 @@ DOWNLOAD_PATH = r"G:\Users\Joachim\Downloads"
 WINDOW_WIDTH = 220
 WINDOW_HEIGHT = 180
 
-async def async_download_message():
+async def async_download_message() -> None:
     result_label.configure(text="Downloading...")
 
 
-def download():
+def download() -> None:
     url = url_entry.get()
     if not url:
         result_label.configure(text="Invalid URL.")
@@ -22,6 +22,7 @@ def download():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
+    # All this async code is to display "downloading..." status message as the download is processing.
     async def download_task():
         await async_download_message()
         format_type = format_var.get()
@@ -72,7 +73,7 @@ def get_mp4_stream(video: YouTube, quality: str) -> Stream:
     else:
         return video.streams.get_by_resolution(quality)
 
-def on_format_select(*args):
+def on_format_select(*args) -> None:
     selected_format = format_var.get()
     if selected_format == "mp4":
         resolution_combo.configure(state="readonly")
