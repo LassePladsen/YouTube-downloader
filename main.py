@@ -1,13 +1,13 @@
-import tkinter as tk
-from tkinter import ttk
-from pytube import YouTube,exceptions,Stream
-from typing import Union
 import asyncio
 import threading
+import tkinter as tk
+from tkinter import ttk
+
+from pytube import YouTube, exceptions, Stream
 
 DOWNLOAD_PATH = r"G:\Users\Joachim\Downloads"
-WINDOW_WIDTH = 220
-WINDOW_HEIGHT = 180
+WINDOW_WIDTH = 230
+WINDOW_HEIGHT = 190
 
 async def async_download_message() -> None:
     result_label.configure(text="Downloading...")
@@ -36,7 +36,8 @@ def download() -> None:
 
     threading.Thread(target=start_download).start()
 
-def get_stream(url: str, format_type: str, resolution: str) -> tuple[Union[Stream, None], str]:
+
+def get_stream(url: str, format_type: str, resolution: str) -> tuple[Stream | None, str]:
     outstring = ""
     try:
         video = YouTube(url)
@@ -67,11 +68,13 @@ def get_stream(url: str, format_type: str, resolution: str) -> tuple[Union[Strea
 
     return stream, outstring
 
+
 def get_mp4_stream(video: YouTube, quality: str) -> Stream:
     if quality == "Max (w/ audio)":
         return video.streams.get_highest_resolution()
     else:
         return video.streams.get_by_resolution(quality)
+
 
 def on_format_select(*args) -> None:
     selected_format = format_var.get()
@@ -85,15 +88,16 @@ def on_format_select(*args) -> None:
 root = tk.Tk()
 root.title("YouTube Downloader")
 
-# Calculate the screen width and height
+# Styling
+style = ttk.Style().configure(
+        "Red.TLabel", foreground="red", font=("Arial", 10, "bold")
+)
+
+# Set the window's position in the middle of the screen
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-
-# Calculate the x and y coordinates for the window to be centered
 x = int((screen_width / 2) - (WINDOW_WIDTH / 2))
 y = int((screen_height / 2) - (WINDOW_HEIGHT / 2))
-
-# Set the window's position
 root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{x}+{y}")
 
 # URL input
@@ -129,10 +133,11 @@ download_button = ttk.Button(root, text="Download", command=download)
 download_button.pack(pady=5)
 
 # Result label
-result_label = ttk.Label(root, text="",wraplength=WINDOW_WIDTH)
+result_label = ttk.Label(root, text="",wraplength=WINDOW_WIDTH, style="Red.TLabel")
 result_label.pack()
 
 # Initialize resolution combo box state
 resolution_combo.configure(state="readonly")
 
-root.mainloop()
+if __name__ == "__main__":
+    root.mainloop()
