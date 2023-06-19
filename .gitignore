@@ -1,2 +1,4 @@
 pysimplegui/
-YouTubeDownloader.exe - Shortcut.lnk
+dist/
+build/
+YouTubeDownloader.spec
