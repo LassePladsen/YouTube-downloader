@@ -4,3 +4,4 @@ build/
 venv/
 .idea/
 YouTube Downloader.spec
+data/config.json
