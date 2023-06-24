@@ -139,7 +139,7 @@ def change_download_folder() -> None:
 
 
 root = tk.Tk()
-root.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
+root.resizable(False, False)
 root.title("YouTube Downloader")
 
 # Check if download path is set, if not, ask for it
