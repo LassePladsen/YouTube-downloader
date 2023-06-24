@@ -30,7 +30,7 @@ async def async_download_message() -> None:
 def download() -> None:
     url = url_entry.get()
     if not url:
-        result_label.configure(text="Invalid URL.")
+        result_label.configure(text="Invalid URL")
         return
 
     loop = asyncio.new_event_loop()
@@ -66,7 +66,7 @@ def get_stream(url: str, format_type: str, resolution: str) -> tuple[Stream | No
         elif format_type == "mp3":
             stream = video.streams.get_audio_only()
         else:
-            result_label.configure(text="Invalid format.")
+            result_label.configure(text="Invalid format")
     except exceptions.AgeRestrictedError:
         outstring = "Download failed, video is age restricted."
         return None, outstring
