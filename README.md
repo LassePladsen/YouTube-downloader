@@ -5,8 +5,7 @@
 - Python 3.6+
 - pytube 15.0.0+
 
-## Setting download path:
-Change download path in `main.py` line 8: DOWNLOAD_PATH
+
 
 
 
