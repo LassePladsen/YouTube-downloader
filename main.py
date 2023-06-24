@@ -48,13 +48,16 @@ def get_stream(url: str, format_type: str, resolution: str) -> tuple[Stream | No
     stream = None
     try:
         if format_type == "mp4":
-            stream = get_mp4_stream(video,resolution)
+            stream = get_mp4_stream(video, resolution)
         elif format_type == "mp3":
             stream = video.streams.get_audio_only()
         else:
             result_label.configure(text="Invalid format.")
     except exceptions.AgeRestrictedError:
         outstring = "Download failed, video is age restricted."
+        return None, outstring
+    except exceptions.RegexMatchError:
+        outstring = "RegexMatchError getting the video stream."
         return None, outstring
 
     if stream is None:   # no stream gotten
@@ -141,3 +144,28 @@ resolution_combo.configure(state="readonly")
 
 if __name__ == "__main__":
     root.mainloop()
+
+# TODO: make the download path configurable in the gui
+"""note: pytube.exceptions.RegetMatchError raising when getting streams from a YouTube object, temp. workaround is 
+on 'https://github.com/pytube/pytube/issues/1678' from 'mrmechanik':
+The first regex in the function_patterns (cipher.py -> get_throttling_function_name -> function_patterns) does not have a capture group for the method name so I added one:
+
+r'a\.[a-zA-Z]\s*&&\s*\([a-z]\s*=\s*a\.get\("n"\)\)\s*&&.*?\|\|\s*([a-z]+)'
+
+Tested with 3 different videos.
+This is probably only a quick fix.
+
+Final code segment:
+
+    function_patterns = [
+        # https://github.com/ytdl-org/youtube-dl/issues/29326#issuecomment-865985377
+        # https://github.com/yt-dlp/yt-dlp/commit/48416bc4a8f1d5ff07d5977659cb8ece7640dcd8
+        # var Bpa = [iha];
+        # ...
+        # a.C && (b = a.get("n")) && (b = Bpa[0](b), a.set("n", b),
+        # Bpa.length || iha("")) }};
+        # In the above case, `iha` is the relevant function name
+        r'a\.[a-zA-Z]\s*&&\s*\([a-z]\s*=\s*a\.get\("n"\)\)\s*&&.*?\|\|\s*([a-z]+)',
+        r'\([a-z]\s*=\s*([a-zA-Z0-9$]+)(\[\d+\])?\([a-z]\)',
+    ]
+"""

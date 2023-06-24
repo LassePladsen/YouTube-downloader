@@ -1,4 +1,6 @@
 pysimplegui/
 dist/
 build/
-YouTubeDownloader.spec
+venv/
+.idea/
+YouTube Downloader.spec
