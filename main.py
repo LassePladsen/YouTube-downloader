@@ -56,7 +56,7 @@ def get_stream(url: str, format_type: str, resolution: str) -> tuple[Stream | No
     try:
         video = YouTube(url)
     except exceptions.RegexMatchError:
-        outstring = f"No video found."
+        outstring = f"No video found"
         return None, outstring
 
     stream = None
@@ -75,13 +75,13 @@ def get_stream(url: str, format_type: str, resolution: str) -> tuple[Stream | No
         return None, outstring
 
     if stream is None:  # no stream gotten
-        outstring = f"No stream found in {resolution}."
+        outstring = f"No stream found in {resolution}"
     else:
         stream.download(DOWNLOAD_PATH, filename=stream.default_filename.replace("mp4", format_type))
         if format_type == "mp4":
-            outstring = rf"Video downloaded in {stream.resolution}."
+            outstring = rf"Video downloaded in {stream.resolution}"
         elif format_type == "mp3":
-            outstring = rf"Audio downloaded with bitrate: {stream.bitrate}."
+            outstring = rf"Audio downloaded with bitrate: {stream.bitrate}"
 
     return stream, outstring
 
