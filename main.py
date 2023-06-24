@@ -146,7 +146,7 @@ if __name__ == "__main__":
     root.mainloop()
 
 # TODO: make the download path configurable in the gui
-"""note: pytube.exceptions.RegetMatchError raising when getting streams from a YouTube object, temp. workaround is 
+"""note: When getting pytube.exceptions.RegetMatchError when getting streams from a YouTube object, temp. workaround is 
 on 'https://github.com/pytube/pytube/issues/1678' from 'mrmechanik':
 The first regex in the function_patterns (cipher.py -> get_throttling_function_name -> function_patterns) does not have a capture group for the method name so I added one:
 
