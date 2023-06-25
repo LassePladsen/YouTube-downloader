@@ -19,7 +19,7 @@ WINDOW_WIDTH = 281
 WINDOW_HEIGHT = 190
 CONFIG_JSON_PATH = get_absolute_path("data/config.json")
 FOLDER_IMAGE_PATH = get_absolute_path("data/folder.png")
-FOLDER_IMAGE_SIZE = 35, 35
+FOLDER_IMAGE_SUBSAMPLE = 35, 35
 DOWNLOAD_FOLDER_TITLE = "Select a Download Directory"
 
 
@@ -203,7 +203,8 @@ result_label.pack()
 resolution_combo.configure(state="readonly")
 
 # Change download folder button
-folder_photo_image = tk.PhotoImage(file=FOLDER_IMAGE_PATH).subsample(FOLDER_IMAGE_SIZE[0], FOLDER_IMAGE_SIZE[1])
+folder_photo_image = tk.PhotoImage(file=FOLDER_IMAGE_PATH).subsample(FOLDER_IMAGE_SUBSAMPLE[0],
+                                                                     FOLDER_IMAGE_SUBSAMPLE[1])
 folder_button = ttk.Button(root, image=folder_photo_image, command=change_download_folder)
 folder_button.place(relx=0.98, rely=0.98, anchor="se")  # place at the right bottom of the window
 
