@@ -15,16 +15,17 @@ def get_absolute_path(relative_path: str) -> str:
     return os.path.join(base_path, relative_path)
 
 
-WINDOW_WIDTH = 281
-WINDOW_HEIGHT = 190
+WINDOW_WIDTH = 285
+WINDOW_HEIGHT = 205
 CONFIG_JSON_PATH = get_absolute_path("data/config.json")
 FOLDER_IMAGE_PATH = get_absolute_path("data/folder.png")
+ICON_IMAGE_PATH = get_absolute_path("data/icon.ico")
 FOLDER_IMAGE_SUBSAMPLE = 35, 35
 DOWNLOAD_FOLDER_TITLE = "Select a Download Directory"
 
 
-async def async_download_message() -> None:
-    result_label.configure(text="Downloading...")
+async def set_result_label_async_message(message: str) -> None:
+    result_label.configure(text=message)
 
 
 def download() -> None:
@@ -33,32 +34,43 @@ def download() -> None:
         result_label.configure(text="Invalid URL")
         return
 
+    progress_bar.pack()
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     # All this async code is to display "downloading..." status message as the download is processing.
     async def download_task():
-        await async_download_message()
+        await set_result_label_async_message("Getting video...")
         format_type = format_var.get()
         resolution = resolution_var.get()
-        stream, outstring = get_stream(url, format_type, resolution)
-        result_label.configure(text=outstring)
+        download_video_stream(url, format_type, resolution)
 
     def start_download():
         loop.run_until_complete(download_task())
         loop.close()
+        progress_bar.pack_forget()
 
     threading.Thread(target=start_download).start()
 
 
-def get_stream(url: str, format_type: str, resolution: str) -> tuple[Stream | None, str]:
-    outstring = ""
+def download_video_stream(url: str, format_type: str, resolution: str) -> None:
+    match format_type:
+        case "mp4":
+            file_type = "video"
+        case "mp3":
+            file_type = "audio"
+        case _:
+            result_label.configure(text="Invalid format")
+            return
+    result_label.configure(text=f"Getting {file_type}...")
     try:
-        video = YouTube(url)
+        video = YouTube(url, on_progress_callback=on_progress, on_complete_callback=on_complete)
     except exceptions.RegexMatchError:
-        outstring = f"No video found"
-        return None, outstring
-
+        result_label.configure(text=f"No video found")
+        return
+    except exceptions:
+        result_label.configure(text=f"Error getting video")
+        return
     stream = None
     try:
         if format_type == "mp4":
@@ -68,22 +80,15 @@ def get_stream(url: str, format_type: str, resolution: str) -> tuple[Stream | No
         else:
             result_label.configure(text="Invalid format")
     except exceptions.AgeRestrictedError:
-        outstring = "Download failed, video is age restricted."
-        return None, outstring
-    except exceptions.RegexMatchError:
-        outstring = "RegexMatchError getting the video stream."
-        return None, outstring
-
+        result_label.configure(text="Download failed, video is age restricted")
+        return
+    except exceptions:
+        result_label.configure(text="Unknown error getting the video stream")
+        return
     if stream is None:  # no stream gotten
-        outstring = f"No stream found in {resolution}"
+        result_label.configure(text=f"No stream found in {resolution}")
     else:
         stream.download(DOWNLOAD_PATH, filename=stream.default_filename.replace("mp4", format_type))
-        if format_type == "mp4":
-            outstring = rf"Video downloaded in {stream.resolution}"
-        elif format_type == "mp3":
-            outstring = rf"Audio downloaded with bitrate: {stream.bitrate}"
-
-    return stream, outstring
 
 
 def get_mp4_stream(video: YouTube, quality: str) -> Stream:
@@ -138,9 +143,49 @@ def change_download_folder() -> None:
         set_json_data("download_path", filepath)
 
 
+def on_progress(stream, chunk, bytes_remaining) -> None:
+    """Function on download progress callback event in get_stream().
+    It updates result label and the progress bar."""
+    progress_bar.pack()
+    total_size = stream.filesize
+    bytes_downloaded = total_size - bytes_remaining
+    percent = int(round(bytes_downloaded / total_size * 100, 0))
+    result_label.configure(text=f"Downloading {stream.type}... {percent}%")
+    result_label.update()
+    progress_bar["value"] = float(percent)
+    progress_bar.update()
+
+
+def on_complete(stream, file_handle) -> None:
+    """Function on download complete callback event in get_stream().
+    It updates result label and hides the progress bar."""
+    max_chars = 80
+    # max_chars = 68
+    title = stream.title
+    match stream.type:
+        case "video":
+            text = f"Downloaded '{title}.mp4' in {stream.resolution}!"
+            if len(text) > max_chars:  # video title too long
+                chars = len(text) - max_chars - 4
+                text = f"Downloaded '{title[:chars]}... .mp4' in {stream.resolution}!"
+        case "audio":
+            text = f"Downloaded '{title}.mp3' with bitrate {stream.bitrate}!"
+            if len(text) > max_chars:  # video title too long
+                chars = len(text) - max_chars - 4
+                text = f"Downloaded '{title[:chars]}... .mp3' with bitrate {stream.bitrate}!"
+        case _:
+            text = f"Downloaded '{title}'!"
+            if len(text) > max_chars:  # video title too long
+                text = text[:max_chars] + "..."
+
+    result_label.configure(text=text)
+    progress_bar.pack_forget()
+
+
 root = tk.Tk()
 root.resizable(False, False)
 root.title("YouTube Downloader")
+root.iconbitmap(ICON_IMAGE_PATH)
 
 # Check if download path is set, if not, ask for it
 if file_exists(CONFIG_JSON_PATH):
@@ -193,11 +238,15 @@ resolution_combo.pack()
 
 # Download button
 download_button = ttk.Button(root, text="Download", command=download)
-download_button.pack(pady=5)
+download_button.pack(pady=3)
 
 # Result label
 result_label = ttk.Label(root, text="", wraplength=WINDOW_WIDTH, style="Red.TLabel")
 result_label.pack()
+
+# Download progress bar
+progress_bar = ttk.Progressbar(root, orient="horizontal", length=WINDOW_WIDTH * 0.8)
+# dont pack yet
 
 # Initialize resolution combo box state
 resolution_combo.configure(state="readonly")
