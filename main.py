@@ -206,8 +206,7 @@ resolution_combo.configure(state="readonly")
 folder_photo_image = tk.PhotoImage(file=FOLDER_IMAGE_PATH).subsample(FOLDER_IMAGE_SUBSAMPLE[0],
                                                                      FOLDER_IMAGE_SUBSAMPLE[1])
 folder_button = ttk.Button(root, image=folder_photo_image, command=change_download_folder)
-folder_button.place(relx=0.98, rely=0.98, anchor="se")  # place at the right bottom of the window
-
+folder_button.place(relx=0.995, rely=0.005, anchor="ne")
 if __name__ == "__main__":
     root.mainloop()
 
