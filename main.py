@@ -16,7 +16,7 @@ def get_absolute_path(relative_path: str) -> str:
 
 
 WINDOW_WIDTH = 285
-WINDOW_HEIGHT = 205
+WINDOW_HEIGHT = 245
 CONFIG_JSON_PATH = get_absolute_path("data/config.json")
 FOLDER_IMAGE_PATH = get_absolute_path("data/folder.png")
 ICON_IMAGE_PATH = get_absolute_path("data/icon.ico")
@@ -34,7 +34,7 @@ def download() -> None:
         result_label.configure(text="Invalid URL")
         return
 
-    progress_bar.pack()
+    progress_bar.grid(column=col, row=8)
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
@@ -183,6 +183,8 @@ def on_complete(stream, file_handle) -> None:
 
 
 root = tk.Tk()
+root.tk.call("source", get_absolute_path("data\\Azure-ttk-theme-2.1.0\\azure.tcl"))
+root.tk.call("set_theme", "dark")
 root.resizable(False, False)
 root.title("YouTube Downloader")
 root.iconbitmap(ICON_IMAGE_PATH)
@@ -208,41 +210,42 @@ x = int((screen_width / 2) - (WINDOW_WIDTH / 2))
 y = int((screen_height / 2) - (WINDOW_HEIGHT / 2))
 root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{x}+{y}")
 
+col = 0
+
 # URL input
 url_label = ttk.Label(root, text="URL:")
-url_label.pack()
+url_label.grid(column=col, row=0)
 
 url_entry = ttk.Entry(root, width=35)
-url_entry.pack()
+url_entry.grid(column=col, row=1)
 
 # Format selection
 format_label = ttk.Label(root, text="Format:")
-format_label.pack()
+format_label.grid(column=col, row=2)
 
 format_var = tk.StringVar()
 format_var.set("mp4")
 format_combo = ttk.Combobox(root, textvariable=format_var, values=["mp4", "mp3"], state="readonly")
-format_combo.pack()
+format_combo.grid(column=col, row=3)
 
 format_var.trace("w", on_format_select)
 
 # Resolution selection
 resolution_label = ttk.Label(root, text="Resolution:")
-resolution_label.pack()
+resolution_label.grid(column=col, row=4)
 
 resolution_var = tk.StringVar()
 resolution_var.set("Max (w/ audio)")
 resolution_combo = ttk.Combobox(root, textvariable=resolution_var,
                                 values=["Max (w/ audio)", "1080p (muted)", "720p", "480p", "360p"])
-resolution_combo.pack()
+resolution_combo.grid(column=col, row=5, pady=5)
 
 # Download button
 download_button = ttk.Button(root, text="Download", command=download)
-download_button.pack(pady=3)
-
+download_button.grid(column=col, row=6)
 # Result label
-result_label = ttk.Label(root, text="", wraplength=WINDOW_WIDTH, style="Red.TLabel")
-result_label.pack()
+result_label = ttk.Label(root, text="", wraplength=WINDOW_WIDTH*0.98, style="Red.TLabel")
+result_label.grid(column=col, row=7)
 
 # Download progress bar
 progress_bar = ttk.Progressbar(root, orient="horizontal", length=WINDOW_WIDTH * 0.8)
@@ -255,7 +258,7 @@ resolution_combo.configure(state="readonly")
 folder_photo_image = tk.PhotoImage(file=FOLDER_IMAGE_PATH).subsample(FOLDER_IMAGE_SUBSAMPLE[0],
                                                                      FOLDER_IMAGE_SUBSAMPLE[1])
 folder_button = ttk.Button(root, image=folder_photo_image, command=change_download_folder)
-folder_button.place(relx=0.995, rely=0.005, anchor="ne")
+folder_button.grid(column=col, row=6, sticky="e", padx=35)
 if __name__ == "__main__":
     root.mainloop()
 
