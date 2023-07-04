@@ -82,8 +82,11 @@ def download_video_stream(url: str, format_type: str, resolution: str) -> None:
     except exceptions.AgeRestrictedError:
         result_label.configure(text="Download failed, video is age restricted")
         return
-    except exceptions:
-        result_label.configure(text="Unknown error getting the video stream")
+    except exceptions.RegexMatchError:
+        result_label.configure(text="Download failed, unknown RegexMatchError")
+        return
+    except exceptions.VideoUnavailable:
+        result_label.configure(text="Download failed, video is unavailable")
         return
     if stream is None:  # no stream gotten
         result_label.configure(text=f"No stream found in {resolution}")
