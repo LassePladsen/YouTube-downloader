@@ -217,7 +217,7 @@ url_label = ttk.Label(root, text="URL:")
 url_label.grid(column=col, row=0)
 
 url_entry = ttk.Entry(root, width=35)
-url_entry.grid(column=col, row=1)
+url_entry.grid(column=col, row=1, padx=10)
 
 # Format selection
 format_label = ttk.Label(root, text="Format:")
@@ -258,7 +258,7 @@ resolution_combo.configure(state="readonly")
 folder_photo_image = tk.PhotoImage(file=FOLDER_IMAGE_PATH).subsample(FOLDER_IMAGE_SUBSAMPLE[0],
                                                                      FOLDER_IMAGE_SUBSAMPLE[1])
 folder_button = ttk.Button(root, image=folder_photo_image, command=change_download_folder)
-folder_button.grid(column=col, row=6, sticky="e", padx=35)
+folder_button.grid(column=col, row=6, sticky="e", padx=48)
 if __name__ == "__main__":
     root.mainloop()
 
