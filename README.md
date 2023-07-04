@@ -1,6 +1,6 @@
 # YouTube-downloader
 
-Very barebones downloader for youtube videos, mp4/mp3.
+Simple downloader for youtube videos, mp4/mp3.
 
 ## Requirements:
 
