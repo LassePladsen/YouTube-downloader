@@ -2,6 +2,7 @@ pysimplegui/
 dist/
 build/
 venv/
+.venv/
 .idea/
 YouTube Downloader.spec
 data/config.json
