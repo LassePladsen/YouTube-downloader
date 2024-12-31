@@ -1,6 +1,8 @@
 import asyncio
 import json
 import os
+from PIL import Image, ImageTk
+from pathlib import Path
 import sys
 import threading
 import tkinter as tk
@@ -10,16 +12,17 @@ from pytube import YouTube, exceptions, Stream
 
 
 def get_absolute_path(relative_path: str) -> str:
-    """Get absolute path to resource, works for dev and for PyInstaller """
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return (Path(base_path) / relative_path).resolve()
 
 
 WINDOW_WIDTH = 285
 WINDOW_HEIGHT = 245
-CONFIG_JSON_PATH = get_absolute_path("data/config.json")
-FOLDER_IMAGE_PATH = get_absolute_path("data/folder.png")
-ICON_IMAGE_PATH = get_absolute_path("data/icon.ico")
+DATA_FOLDER = Path("data")
+CONFIG_JSON_PATH = get_absolute_path(DATA_FOLDER / "config.json")
+FOLDER_IMAGE_PATH = get_absolute_path(DATA_FOLDER / "folder.png")
+ICON_IMAGE_PATH = get_absolute_path(DATA_FOLDER / "icon.ico")
 FOLDER_IMAGE_SUBSAMPLE = 35, 35
 DOWNLOAD_FOLDER_TITLE = "Select a Download Directory"
 
@@ -64,7 +67,9 @@ def download_video_stream(url: str, format_type: str, resolution: str) -> None:
             return
     result_label.configure(text=f"Getting {file_type}...")
     try:
-        video = YouTube(url, on_progress_callback=on_progress, on_complete_callback=on_complete)
+        video = YouTube(
+            url, on_progress_callback=on_progress, on_complete_callback=on_complete
+        )
     except exceptions.RegexMatchError:
         result_label.configure(text=f"No video found")
         return
@@ -91,7 +96,9 @@ def download_video_stream(url: str, format_type: str, resolution: str) -> None:
     if stream is None:  # no stream gotten
         result_label.configure(text=f"No stream found in {resolution}")
     else:
-        stream.download(DOWNLOAD_PATH, filename=stream.default_filename.replace("mp4", format_type))
+        stream.download(
+            DOWNLOAD_PATH, filename=stream.default_filename.replace("mp4", format_type)
+        )
 
 
 def get_mp4_stream(video: YouTube, quality: str) -> Stream:
@@ -186,11 +193,11 @@ def on_complete(stream, file_handle) -> None:
 
 
 root = tk.Tk()
-root.tk.call("source", get_absolute_path("data\\Azure-ttk-theme-2.1.0\\azure.tcl"))
+root.tk.call("source", get_absolute_path(DATA_FOLDER / "Azure-ttk-theme-2.1.0" / "azure.tcl"))
 root.tk.call("set_theme", "dark")
 root.resizable(False, False)
 root.title("YouTube Downloader")
-root.iconbitmap(ICON_IMAGE_PATH)
+root.iconphoto(True, ImageTk.PhotoImage(Image.open(ICON_IMAGE_PATH)))
 
 # Check if download path is set, if not, ask for it
 if file_exists(CONFIG_JSON_PATH):
@@ -203,7 +210,7 @@ else:
 
 # Styling
 style = ttk.Style().configure(
-        "Red.TLabel", foreground="red", font=("Arial", 10, "bold")
+    "Red.TLabel", foreground="red", font=("Arial", 10, "bold")
 )
 
 # Set the window's position in the middle of the screen
@@ -228,7 +235,9 @@ format_label.grid(column=col, row=2)
 
 format_var = tk.StringVar()
 format_var.set("mp4")
-format_combo = ttk.Combobox(root, textvariable=format_var, values=["mp4", "mp3"], state="readonly")
+format_combo = ttk.Combobox(
+    root, textvariable=format_var, values=["mp4", "mp3"], state="readonly"
+)
 format_combo.grid(column=col, row=3)
 
 format_var.trace("w", on_format_select)
@@ -239,15 +248,20 @@ resolution_label.grid(column=col, row=4)
 
 resolution_var = tk.StringVar()
 resolution_var.set("Max (w/ audio)")
-resolution_combo = ttk.Combobox(root, textvariable=resolution_var,
-                                values=["Max (w/ audio)", "1080p (muted)", "720p", "480p", "360p"])
+resolution_combo = ttk.Combobox(
+    root,
+    textvariable=resolution_var,
+    values=["Max (w/ audio)", "1080p (muted)", "720p", "480p", "360p"],
+)
 resolution_combo.grid(column=col, row=5, pady=5)
 
 # Download button
 download_button = ttk.Button(root, text="Download", command=download)
 download_button.grid(column=col, row=6)
 # Result label
-result_label = ttk.Label(root, text="", wraplength=WINDOW_WIDTH*0.98, style="Red.TLabel")
+result_label = ttk.Label(
+    root, text="", wraplength=WINDOW_WIDTH * 0.98, style="Red.TLabel"
+)
 result_label.grid(column=col, row=7)
 
 # Download progress bar
@@ -258,33 +272,16 @@ progress_bar = ttk.Progressbar(root, orient="horizontal", length=WINDOW_WIDTH * 
 resolution_combo.configure(state="readonly")
 
 # Change download folder button
-folder_photo_image = tk.PhotoImage(file=FOLDER_IMAGE_PATH).subsample(FOLDER_IMAGE_SUBSAMPLE[0],
-                                                                     FOLDER_IMAGE_SUBSAMPLE[1])
-folder_button = ttk.Button(root, image=folder_photo_image, command=change_download_folder)
+folder_photo_image = tk.PhotoImage(file=FOLDER_IMAGE_PATH).subsample(
+    FOLDER_IMAGE_SUBSAMPLE[0], FOLDER_IMAGE_SUBSAMPLE[1]
+)
+folder_button = ttk.Button(
+    root, image=folder_photo_image, command=change_download_folder
+)
 folder_button.grid(column=col, row=6, sticky="e", padx=48)
 if __name__ == "__main__":
     root.mainloop()
 
 """note: When getting pytube.exceptions.RegetMatchError when getting streams from a YouTube object, temp. workaround is 
-on 'https://github.com/pytube/pytube/issues/1678' from 'mrmechanik':
-The first regex in the function_patterns (cipher.py -> get_throttling_function_name -> function_patterns) does not have a capture group for the method name so I added one:
-
-r'a\.[a-zA-Z]\s*&&\s*\([a-z]\s*=\s*a\.get\("n"\)\)\s*&&.*?\|\|\s*([a-z]+)'
-
-Tested with 3 different videos.
-This is probably only a quick fix.
-
-Final code segment:
-
-    function_patterns = [
-        # https://github.com/ytdl-org/youtube-dl/issues/29326#issuecomment-865985377
-        # https://github.com/yt-dlp/yt-dlp/commit/48416bc4a8f1d5ff07d5977659cb8ece7640dcd8
-        # var Bpa = [iha];
-        # ...
-        # a.C && (b = a.get("n")) && (b = Bpa[0](b), a.set("n", b),
-        # Bpa.length || iha("")) }};
-        # In the above case, `iha` is the relevant function name
-        r'a\.[a-zA-Z]\s*&&\s*\([a-z]\s*=\s*a\.get\("n"\)\)\s*&&.*?\|\|\s*([a-z]+)',
-        r'\([a-z]\s*=\s*([a-zA-Z0-9$]+)(\[\d+\])?\([a-z]\)',
-    ]
+on 'https://github.com/pytube/pytube/issues/1678' from 'mrmechanik'
 """
